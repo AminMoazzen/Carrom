@@ -113,3 +113,5 @@ proj.win32/Release.*/
 
 # others
 /Keystore
+/out
+/win32-build
