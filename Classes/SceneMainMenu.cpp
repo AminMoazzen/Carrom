@@ -24,6 +24,7 @@
 
 #include "SceneMainMenu.h"
 #include "SimpleAudioEngine.h"
+#include "SceneGame.h"
 
 USING_NS_CC;
 
@@ -182,4 +183,8 @@ void MainMenu::menuCloseCallback(Ref* pSender)
 
 void MainMenu::startButtonCallback(Ref* pSender)
 {
+	Director::getInstance()->pushScene(this);
+
+	auto game = Game::createScene();
+	Director::getInstance()->replaceScene(game);
 }
