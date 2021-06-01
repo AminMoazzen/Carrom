@@ -51,11 +51,15 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/SceneMainMenu.cpp
      Classes/SceneGame.cpp
+     Classes/Disk.cpp
+     Classes/Striker.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
      Classes/SceneMainMenu.h
      Classes/SceneGame.h
+     Classes/Disk.h
+     Classes/Striker.h
      )
 
 if(ANDROID)

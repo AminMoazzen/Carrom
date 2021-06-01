@@ -1,29 +1,9 @@
-/****************************************************************************
- Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
-
- http://www.cocos2d-x.org
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ****************************************************************************/
+#define PI   3.1415926535897932385f
 
 #include "SceneGame.h"
 #include "SimpleAudioEngine.h"
+#include "Disk.h"
+#include "Striker.h"
 
 USING_NS_CC;
 
@@ -41,13 +21,14 @@ static void problemLoading(const char* filename)
 // on "init" you need to initialize your instance
 bool Game::init()
 {
-	if (!Scene::init())
+	if (!Scene::initWithPhysics())
 	{
 		return false;
 	}
 
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	Vec2 center = Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y);
 
 	//auto closeItem = MenuItemImage::create(
 	//	"CloseNormal.png",
@@ -88,43 +69,164 @@ bool Game::init()
 	}
 	else
 	{
-		table->setContentSize(Size(visibleSize.height, visibleSize.height));
-		table->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+		table->setPosition(center);
 
 		this->addChild(table, 0);
 	}
-	// add a label shows "Hello World"
-	// create and initialize a label
 
-	//auto label = Label::createWithTTF("Carrom", "fonts/Marker Felt.ttf", 24);
-	//if (label == nullptr)
+	//auto paw = Sprite::create("DiskPaw.png");
+	//if (paw == nullptr)
 	//{
-	//	problemLoading("'fonts/Marker Felt.ttf'");
+	//	problemLoading("'DiskPaw.png'");
 	//}
 	//else
 	//{
-	//	// position the label on the center of the screen
-	//	label->setPosition(Vec2(origin.x + visibleSize.width / 2,
-	//		origin.y + visibleSize.height - label->getContentSize().height));
+	//	paw->setPosition(Vec2(center.x, 0));
+	//	this->addChild(paw, 1);
+	//	auto physicsBody = PhysicsBody::createCircle(paw->getContentSize().width / 2,
+	//		PhysicsMaterial(0.1f, 1.0f, 0.0f));
+	//	//physicsBody->setDynamic(false);
+	//	physicsBody->setRotationEnable(false);
+	//	physicsBody->setGravityEnable(false);
+	//	physicsBody->setLinearDamping(0.1);
 
-	//	// add the label as a child to this layer
-	//	this->addChild(label, 1);
+	//	paw->addComponent(physicsBody);
 	//}
 
-	//// add "HelloWorld" splash screen"
-	//auto sprite = Sprite::create("HelloWorld.png");
-	//if (sprite == nullptr)
+	auto topEdge = Sprite::create("TableTopEdge.png");
+	if (topEdge == nullptr)
+	{
+		problemLoading("'TableTopEdge.png'");
+	}
+	else
+	{
+		topEdge->setAnchorPoint(Vec2(0.5, 0.0));
+		topEdge->setPosition(Vec2(center.x, center.y + table->getContentSize().height / 2));
+		this->addChild(topEdge, 1);
+		auto physicsBody = PhysicsBody::createBox(
+			Size(topEdge->getContentSize().width, topEdge->getContentSize().height),
+			PhysicsMaterial(0.1f, 1.0f, 1.0f));
+		physicsBody->setDynamic(false);
+
+		topEdge->addComponent(physicsBody);
+	}
+
+	auto botEdge = Sprite::create("TableBotEdge.png");
+	if (botEdge == nullptr)
+	{
+		problemLoading("'TableBotEdge.png'");
+	}
+	else
+	{
+		botEdge->setAnchorPoint(Vec2(0.5, 1.0));
+		botEdge->setPosition(Vec2(center.x, center.y - table->getContentSize().height / 2));
+		this->addChild(botEdge, 1);
+		auto physicsBody = PhysicsBody::createBox(
+			Size(botEdge->getContentSize().width, botEdge->getContentSize().height),
+			PhysicsMaterial(0.1f, 1.0f, 0.0f));
+		physicsBody->setDynamic(false);
+
+		botEdge->addComponent(physicsBody);
+	}
+
+	auto rightEdge = Sprite::create("TableRightEdge.png");
+	if (rightEdge == nullptr)
+	{
+		problemLoading("'TableRightEdge.png'");
+	}
+	else
+	{
+		rightEdge->setAnchorPoint(Vec2(0.0, 0.5));
+		rightEdge->setPosition(Vec2(center.x + table->getContentSize().width / 2, center.y));
+		this->addChild(rightEdge, 1);
+		auto physicsBody = PhysicsBody::createBox(
+			Size(rightEdge->getContentSize().width, rightEdge->getContentSize().height),
+			PhysicsMaterial(0.1f, 1.0f, 0.0f));
+		physicsBody->setDynamic(false);
+
+		rightEdge->addComponent(physicsBody);
+	}
+
+	auto leftEdge = Sprite::create("TableLeftEdge.png");
+	if (leftEdge == nullptr)
+	{
+		problemLoading("'TableLeftEdge.png'");
+	}
+	else
+	{
+		leftEdge->setAnchorPoint(Vec2(1.0, 0.5));
+		leftEdge->setPosition(Vec2(center.x - table->getContentSize().width / 2, center.y));
+		this->addChild(leftEdge, 1);
+		auto physicsBody = PhysicsBody::createBox(
+			Size(leftEdge->getContentSize().width, leftEdge->getContentSize().height),
+			PhysicsMaterial(0.1f, 1.0f, 0.0f));
+		physicsBody->setDynamic(false);
+
+		leftEdge->addComponent(physicsBody);
+	}
+
+	//add five dynamic bodies
+	//for (int i = 0; i < 5; ++i)
 	//{
-	//	problemLoading("'HelloWorld.png'");
-	//}
-	//else
-	//{
-	//	// position the sprite on the center of the screen
-	//	sprite->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+		//auto disk = Sprite::create("DiskWhite.png");
+		//disk->setPosition(
+		//	Vec2(center.x + cocos2d::random(-100, 100), center.y + cocos2d::random(-100, 100)));
 
-	//	// add the sprite as a child to this layer
-	//	this->addChild(sprite, 0);
+		//auto physicsBody = PhysicsBody::createCircle(disk->getContentSize().width / 2,
+		//	PhysicsMaterial(0.1f, 1.0f, 1.0f));
+		//physicsBody->setRotationEnable(false);
+		//physicsBody->setLinearDamping(0.1);
+
+		//disk->addComponent(physicsBody);
+
+		////set the body isn't affected by the physics world's gravitational force
+		//physicsBody->setGravityEnable(false);
+
+		////set initial velocity of physicsBody
+		//physicsBody->setVelocity(Vec2(cocos2d::random(-500, 500),
+		//	cocos2d::random(-500, 500)));
+		//physicsBody->setTag(10);
+
+		//this->addChild(disk, 1);
 	//}
+
+	auto striker = Striker::create();
+	striker->setPosition(Vec2(center.x, center.y));
+	this->addChild(striker, 1);
+
+	auto type = DiskType::Red;
+	auto disk = Disk::create(type);
+	disk->setPosition(center);
+	this->addChild(disk, 1);
+
+	float width = disk->getContentSize().width;
+	const float sqrt3 = 1.7320508075688772935f;
+
+	float offsetAngle = PI / 6;
+	for (int r = 1; r <= 2; ++r)
+	{
+		float deltaAngle = (2 * PI) / (6 * r);
+		float radius = width;
+		for (int i = 0; i < 6 * r; ++i)
+		{
+			if (i % 2 == 0)
+			{
+				type = DiskType::White;
+				radius = width * r;
+			}
+			else
+			{
+				type = DiskType::Black;
+				radius = width * (r == 1 ? r : sqrt3);
+			}
+			disk = Disk::create(type);
+			float angle = deltaAngle * i + offsetAngle;
+			auto pos = center + Vec2(radius * cos(angle), radius * sin(angle));
+			disk->setPosition(pos);
+			this->addChild(disk, 1);
+		}
+	}
+
 	return true;
 }
 
