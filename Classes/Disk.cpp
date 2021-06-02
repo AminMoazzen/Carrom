@@ -32,7 +32,7 @@ bool Disk::init(DiskType type)
 	auto physicsBody = PhysicsBody::createCircle(sprite->getContentSize().width / 2,
 		PhysicsMaterial(0.1f, 0.75f, 1.0f));
 	physicsBody->setRotationEnable(false);
-	physicsBody->setLinearDamping(0.25);
+	physicsBody->setLinearDamping(0.5);
 	//physicsBody->setDynamic(false);
 	physicsBody->setGravityEnable(false);
 	physicsBody->setTag(10);

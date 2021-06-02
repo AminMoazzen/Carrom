@@ -191,7 +191,7 @@ bool Game::init()
 	//}
 
 	auto striker = Striker::create();
-	striker->setPosition(Vec2(center.x, center.y));
+	striker->setPosition(Vec2(center.x, center.y - 2.5f * table->getContentSize().height / 7));
 	this->addChild(striker, 1);
 
 	auto type = DiskType::Red;

@@ -6,7 +6,6 @@ USING_NS_CC;
 bool Striker::init()
 {
 	//auto visibleSize = Director::getInstance()->getVisibleSize();
-	//auto center = Vec2(visibleSize.width / 2, visibleSize.height / 2);
 
 	std::string fileName = "DiskStriker.png";
 	auto sprite = Sprite::create(fileName);
@@ -15,12 +14,14 @@ bool Striker::init()
 		return false;
 	}
 
+	auto spriteSize = sprite->getContentSize();
+	Vec2 center = Vec2(spriteSize.width / 2, spriteSize.height / 2);
 	//sprite->setPosition(position);
 
 	auto physicsBody = PhysicsBody::createCircle(sprite->getContentSize().width / 2,
 		PhysicsMaterial(0.1f, 0.75f, 1.0f));
 	physicsBody->setRotationEnable(false);
-	physicsBody->setLinearDamping(0.25);
+	physicsBody->setLinearDamping(0.5);
 	physicsBody->setGravityEnable(false);
 	physicsBody->setTag(11);
 
@@ -48,8 +49,9 @@ bool Striker::init()
 	// trigger when you let up
 	touchListener->onTouchEnded = [=](Touch* touch, Event* event) {
 		auto touchLocation = touch->getLocation();
+		auto nodeSpaceLocation = this->getParent()->convertToNodeSpace(touchLocation);
 		auto currentTarget = event->getCurrentTarget();
-		if (this->getBoundingBox().containsPoint(touchLocation))
+		if (this->getBoundingBox().containsPoint(touchLocation + center))
 			physicsBody->setVelocity(Vec2(0, 1000));
 	};
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
