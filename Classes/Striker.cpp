@@ -1,5 +1,6 @@
 #include "Striker.h"
 #include "SimpleAudioEngine.h"
+#include "CarromConfig.h"
 
 USING_NS_CC;
 
@@ -23,38 +24,46 @@ bool Striker::init()
 	physicsBody->setRotationEnable(false);
 	physicsBody->setLinearDamping(0.5);
 	physicsBody->setGravityEnable(false);
-	physicsBody->setTag(11);
+	physicsBody->setTag(TAG_STRIKER);
+	physicsBody->setCategoryBitmask(CATEGORY_BITMASK_STRIKER);
 
 	this->addComponent(physicsBody);
 	this->setContentSize(sprite->getContentSize());
 	this->addChild(sprite, 0);
 
-	//adds contact event listener
-	//auto contactListener = EventListenerPhysicsContact::create();
-	//contactListener->onContactBegin = CC_CALLBACK_1(Striker::onContactBegin, this);
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(Striker::onContactBegin, this);
+
 	auto touchListener = EventListenerTouchOneByOne::create();
 
-	// trigger when you push down
-	touchListener->onTouchBegan = [](Touch* touch, Event* event) {
+	touchListener->onTouchBegan = [=](Touch* touch, Event* event)
+	{
 		// your code
-		//currentTarget->;
-		return true; // if you are consuming it
-	};
-
-	// trigger when moving touch
-	touchListener->onTouchMoved = [](Touch* touch, Event* event) {
-		// your code
-	};
-
-	// trigger when you let up
-	touchListener->onTouchEnded = [=](Touch* touch, Event* event) {
 		auto touchLocation = touch->getLocation();
-		auto nodeSpaceLocation = this->getParent()->convertToNodeSpace(touchLocation);
-		auto currentTarget = event->getCurrentTarget();
 		if (this->getBoundingBox().containsPoint(touchLocation + center))
-			physicsBody->setVelocity(Vec2(0, 1000));
+		{
+			physicsBody->setVelocity(Vec2::ZERO);
+			mIsTouched = true;
+		}
+		return true;
+	};
+
+	//touchListener->onTouchMoved = [](Touch* touch, Event* event)
+	//{
+	//};
+
+	touchListener->onTouchEnded = [=](Touch* touch, Event* event)
+	{
+		if (mIsTouched)
+		{
+			auto touchLocation = touch->getLocation();
+			Vec2 forceDirection = this->getPosition() - touchLocation;
+			physicsBody->setVelocity(forceDirection * power);
+			mIsTouched = false;
+		}
 	};
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
 
 	schedule(CC_SCHEDULE_SELECTOR(Striker::tick), 0.3f);
 	return true;
@@ -71,21 +80,20 @@ void Striker::tick(float dt)
 
 bool Striker::onContactBegin(PhysicsContact& contact)
 {
-	auto nodeA = contact.getShapeA()->getBody()->getNode();
-	auto nodeB = contact.getShapeB()->getBody()->getNode();
+	//auto nodeA = contact.getShapeA()->getBody()->getNode();
+	//auto nodeB = contact.getShapeB()->getBody()->getNode();
 
-	if (nodeA && nodeB)
-	{
-		if (nodeA->getTag() == 10)
-		{
-			nodeB->removeFromParentAndCleanup(true);
-		}
-		else if (nodeB->getTag() == 10)
-		{
-			nodeA->removeFromParentAndCleanup(true);
-		}
-	}
+	//if (nodeA && nodeB)
+	//{
+	//	if (nodeA->getTag() == TAG_DISK)
+	//	{
+	//		nodeB->removeFromParentAndCleanup(true);
+	//	}
+	//	else if (nodeB->getTag() == TAG_DISK)
+	//	{
+	//		nodeA->removeFromParentAndCleanup(true);
+	//	}
+	//}
 
-	//bodies can collide
 	return true;
 }

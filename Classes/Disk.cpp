@@ -1,5 +1,6 @@
 #include "Disk.h"
 #include "SimpleAudioEngine.h"
+#include "CarromConfig.h"
 
 USING_NS_CC;
 
@@ -21,25 +22,28 @@ bool Disk::init(DiskType type)
 		fileName = "DiskRed.png";
 		break;
 	}
-	auto sprite = Sprite::create(fileName);
-	if (sprite == nullptr)
-	{
-		return false;
-	}
+	this->setTexture(fileName);
+	//auto sprite = Sprite::create(fileName);
+	//if (sprite == nullptr)
+	//{
+	//	return false;
+	//}
 
 	//sprite->setPosition(position);
 
-	auto physicsBody = PhysicsBody::createCircle(sprite->getContentSize().width / 2,
+	auto physicsBody = PhysicsBody::createCircle(this->getContentSize().width / 2,
 		PhysicsMaterial(0.1f, 0.75f, 1.0f));
 	physicsBody->setRotationEnable(false);
 	physicsBody->setLinearDamping(0.5);
 	//physicsBody->setDynamic(false);
 	physicsBody->setGravityEnable(false);
-	physicsBody->setTag(10);
+	physicsBody->setCategoryBitmask(CATEGORY_BITMASK_DISK);
+	physicsBody->setContactTestBitmask(CATEGORY_BITMASK_STRIKER | CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_HOLE);
 
 	this->addComponent(physicsBody);
-	this->setContentSize(sprite->getContentSize());
-	this->addChild(sprite, 0);
+	this->setTag(TAG_DISK);
+	//this->setContentSize(this->getContentSize());
+	//this->addChild(sprite, 0);
 
 	//adds contact event listener
 	auto contactListener = EventListenerPhysicsContact::create();
@@ -61,16 +65,17 @@ void Disk::tick(float dt)
 
 bool Disk::onContactBegin(PhysicsContact& contact)
 {
+	//this->setScale(this->_scaleX * 1.1f);
 	auto nodeA = contact.getShapeA()->getBody()->getNode();
 	auto nodeB = contact.getShapeB()->getBody()->getNode();
 
 	if (nodeA && nodeB)
 	{
-		if (nodeA->getTag() == 10)
+		if (nodeA->getTag() == TAG_HOLE)
 		{
 			nodeB->removeFromParentAndCleanup(true);
 		}
-		else if (nodeB->getTag() == 10)
+		else if (nodeB->getTag() == TAG_HOLE)
 		{
 			nodeA->removeFromParentAndCleanup(true);
 		}
@@ -78,4 +83,8 @@ bool Disk::onContactBegin(PhysicsContact& contact)
 
 	//bodies can collide
 	return true;
+}
+
+void Disk::Destroy()
+{
 }

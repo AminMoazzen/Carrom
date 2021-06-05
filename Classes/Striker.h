@@ -5,9 +5,11 @@
 
 USING_NS_CC;
 
-class Striker : public CCSprite
+class Striker : public Sprite
 {
 public:
+	float power = 10;
+
 	static Striker* create()
 	{
 		Striker* striker = new Striker();
@@ -23,6 +25,9 @@ public:
 	bool init();
 	void tick(float dt);
 	bool onContactBegin(PhysicsContact& contact);
+
+private:
+	bool mIsTouched = false;
 };
 
 #endif // __CARROM_STRIKER_H__

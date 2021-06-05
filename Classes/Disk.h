@@ -12,7 +12,7 @@ enum class DiskType
 	Red,
 };
 
-class Disk : public CCSprite
+class Disk : public Sprite
 {
 public:
 	static Disk* create(DiskType type)
@@ -30,6 +30,7 @@ public:
 	bool init(DiskType type);
 	void tick(float dt);
 	bool onContactBegin(PhysicsContact& contact);
+	void Destroy();
 };
 
 #endif // __CARROM_DISK_H__

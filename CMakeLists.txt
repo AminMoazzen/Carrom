@@ -53,6 +53,7 @@ list(APPEND GAME_SOURCE
      Classes/SceneGame.cpp
      Classes/Disk.cpp
      Classes/Striker.cpp
+     Classes/Hole.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -60,6 +61,8 @@ list(APPEND GAME_HEADER
      Classes/SceneGame.h
      Classes/Disk.h
      Classes/Striker.h
+     Classes/Hole.h
+     Classes/CarromConfig.h
      )
 
 if(ANDROID)
