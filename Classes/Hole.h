@@ -5,24 +5,25 @@
 
 USING_NS_CC;
 
-class Hole : public Sprite
+class Hole : public Component
 {
 public:
 	static Hole* create()
 	{
-		Hole* disk = new Hole();
-		if (disk && disk->init())
+		Hole* hole = new Hole();
+		if (hole && hole->init())
 		{
-			disk->autorelease();
-			return disk;
+			hole->autorelease();
+			return hole;
 		}
-		CC_SAFE_DELETE(disk);
+		CC_SAFE_DELETE(hole);
 		return NULL;
 	};
 
+	bool setup();
+
+private:
 	bool init();
-	void tick(float dt);
-	bool onContactBegin(PhysicsContact& contact);
 };
 
 #endif // __CARROM_HOLE_H__

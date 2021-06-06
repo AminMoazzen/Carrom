@@ -61,8 +61,9 @@ bool Game::init()
 			Size(topEdge->getContentSize().width, topEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 1.0f));
 		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
+		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
+		topEdge->setTag(CARROM_TAG_WALL);
 
 		topEdge->addComponent(physicsBody);
 	}
@@ -81,8 +82,9 @@ bool Game::init()
 			Size(botEdge->getContentSize().width, botEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 0.0f));
 		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
+		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
+		botEdge->setTag(CARROM_TAG_WALL);
 
 		botEdge->addComponent(physicsBody);
 	}
@@ -101,8 +103,9 @@ bool Game::init()
 			Size(rightEdge->getContentSize().width, rightEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 0.0f));
 		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
+		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
+		rightEdge->setTag(CARROM_TAG_WALL);
 
 		rightEdge->addComponent(physicsBody);
 	}
@@ -121,76 +124,83 @@ bool Game::init()
 			Size(leftEdge->getContentSize().width, leftEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 0.0f));
 		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
+		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
+		leftEdge->setTag(CARROM_TAG_WALL);
 
 		leftEdge->addComponent(physicsBody);
 	}
 
+	auto physicsMaterial = PhysicsMaterial(0.1f, 0.75f, 1.0f);
+
+	auto strikerSprite = Sprite::createWithSpriteFrameName("DiskStriker.png");
 	auto striker = Striker::create();
-	striker->setPosition(Vec2(center.x, center.y - 2.5f * tableSize.height / 7));
-	this->addChild(striker, 2);
+	strikerSprite->addComponent(striker);
+	striker->setup(physicsMaterial, CARROM_PARAM_DAMPING);
+	strikerSprite->setPosition(Vec2(center.x, center.y - 2.5f * tableSize.height / 7));
+	this->addChild(strikerSprite, CARROM_Z_LAYER_GAMEPLAY);
 
-	auto type = DiskType::Red;
-	auto disk = Disk::create(type);
-	disk->setPosition(center);
-	this->addChild(disk, 2);
+	auto spriteName = "DiskRed.png";
 
-	float width = disk->getContentSize().width;
+	auto diskSprite = Sprite::createWithSpriteFrameName(spriteName);
+	auto disk = Disk::create();
+	diskSprite->addComponent(disk);
+	disk->setup(physicsMaterial, CARROM_PARAM_DAMPING);
+
+	diskSprite->setPosition(center);
+
+	this->addChild(diskSprite, CARROM_Z_LAYER_GAMEPLAY);
+
+	float width = diskSprite->getContentSize().width;
 	const float sqrt3 = 1.7320508075688772935f;
 
-	float offsetAngle = PI / 6;
+	float offsetAngle = CARROM_PI / 6;
 	for (int r = 1; r <= 2; ++r)
 	{
-		float deltaAngle = (2 * PI) / (6 * r);
+		float deltaAngle = (2 * CARROM_PI) / (6 * r);
 		float radius = width;
 		for (int i = 0; i < 6 * r; ++i)
 		{
 			if (i % 2 == 0)
 			{
-				type = DiskType::White;
+				spriteName = "DiskWhite.png";
 				radius = width * r;
 			}
 			else
 			{
-				type = DiskType::Black;
+				spriteName = "DiskBlack.png";
 				radius = width * (r == 1 ? r : sqrt3);
 			}
-			disk = Disk::create(type);
+
+			auto diskSprite = Sprite::createWithSpriteFrameName(spriteName);
+			auto disk = Disk::create();
+			diskSprite->addComponent(disk);
+			disk->setup(physicsMaterial, CARROM_PARAM_DAMPING);
+
 			float angle = deltaAngle * i + offsetAngle;
 			auto pos = center + Vec2(radius * cos(angle), radius * sin(angle));
-			disk->setPosition(pos);
-			this->addChild(disk, 2);
+			diskSprite->setPosition(pos);
+
+			this->addChild(diskSprite, CARROM_Z_LAYER_GAMEPLAY);
 		}
 	}
 
-	float margin = tableSize.width / 102.4f;
-
+	Vec2 offsetPosition = Vec2(1, -1);
+	for (int i = 0; i < 4; i++)
 	{
+		auto holeSprite = Sprite::createWithSpriteFrameName("Hole.png");
 		auto hole = Hole::create();
-		hole->setPosition(Vec2(center.x - tableSize.width / 2, center.y - tableSize.height / 2));
-		this->addChild(hole, 1);
-	}
+		holeSprite->addComponent(hole);
+		hole->setup();
 
-	{
-		auto hole = Hole::create();
-		hole->setRotation(270);
-		hole->setPosition(Vec2(center.x + tableSize.width / 2, center.y - tableSize.height / 2));
-		this->addChild(hole, 1);
-	}
+		offsetPosition.x *= powf(-1, i + 1);
+		offsetPosition.y *= powf(-1, i);
+		holeSprite->setRotation(i * 90);
+		holeSprite->setPosition(Vec2(
+			center.x + offsetPosition.x * tableSize.width / 2,
+			center.y + offsetPosition.y * tableSize.height / 2));
 
-	{
-		auto hole = Hole::create();
-		hole->setRotation(180);
-		hole->setPosition(Vec2(center.x + tableSize.width / 2, center.y + tableSize.height / 2));
-		this->addChild(hole, 1);
-	}
-
-	{
-		auto hole = Hole::create();
-		hole->setRotation(90);
-		hole->setPosition(Vec2(center.x - tableSize.width / 2, center.y + tableSize.height / 2));
-		this->addChild(hole, 1);
+		this->addChild(holeSprite, CARROM_Z_LAYER_BACKGROUND + 1);
 	}
 
 	return true;
@@ -200,7 +210,6 @@ void Game::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
 {
 	if (keyCode == EventKeyboard::KeyCode::KEY_BACK)
 	{
-		//Director::getInstance()->end();
 		Director::getInstance()->popScene();
 	}
 }

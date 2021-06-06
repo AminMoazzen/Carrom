@@ -1,38 +1,26 @@
 #include "Striker.h"
 #include "CarromConfig.h"
-#include "AudioEngine.h"
 
 USING_NS_CC;
 
-using namespace experimental;
-
 bool Striker::init()
 {
-	//auto visibleSize = Director::getInstance()->getVisibleSize();
+	return true;
+}
 
-	std::string fileName = "DiskStriker.png";
-	auto sprite = Sprite::createWithSpriteFrameName(fileName);
-	if (sprite == nullptr)
-	{
-		return false;
-	}
+bool Striker::setup(PhysicsMaterial& material, float damping)
+{
+	auto owner = getOwner();
 
-	auto spriteSize = sprite->getContentSize();
-	Vec2 center = Vec2(spriteSize.width / 2, spriteSize.height / 2);
-	//sprite->setPosition(position);
-
-	auto physicsBody = PhysicsBody::createCircle(sprite->getContentSize().width / 2,
-		PhysicsMaterial(0.1f, 0.75f, 1.0f));
+	auto physicsBody = PhysicsBody::createCircle(owner->getContentSize().width / 2, material);
 	physicsBody->setRotationEnable(false);
 	physicsBody->setLinearDamping(0.5);
 	physicsBody->setGravityEnable(false);
-	physicsBody->setTag(TAG_STRIKER);
-	physicsBody->setCategoryBitmask(CATEGORY_BITMASK_STRIKER);
-	physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_WALL);
+	physicsBody->setTag(CARROM_TAG_STRIKER);
+	physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_STRIKER);
+	physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_WALL);
 
-	this->addComponent(physicsBody);
-	this->setContentSize(sprite->getContentSize());
-	this->addChild(sprite, 0);
+	owner->addComponent(physicsBody);
 
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(Striker::onContactBegin, this);
@@ -41,9 +29,8 @@ bool Striker::init()
 
 	touchListener->onTouchBegan = [=](Touch* touch, Event* event)
 	{
-		// your code
 		auto touchLocation = touch->getLocation();
-		if (this->getBoundingBox().containsPoint(touchLocation + center))
+		if (owner->getBoundingBox().containsPoint(touchLocation))
 		{
 			physicsBody->setVelocity(Vec2::ZERO);
 			mIsTouched = true;
@@ -51,37 +38,23 @@ bool Striker::init()
 		return true;
 	};
 
-	//touchListener->onTouchMoved = [](Touch* touch, Event* event)
-	//{
-	//};
-
 	touchListener->onTouchEnded = [=](Touch* touch, Event* event)
 	{
 		if (mIsTouched)
 		{
 			auto touchLocation = touch->getLocation();
-			Vec2 inputDirection = this->getPosition() - touchLocation;
+			Vec2 inputDirection = owner->getPosition() - touchLocation;
 			float inputPower = inputDirection.getLength();
 			Vec2 normalInput = inputDirection / inputPower;
-			float finalPower = clampf(inputPower * power, 0, 500);
+			float finalPower = clampf(inputPower * power, 0, CARROM_PARAM_STRIKER_MAX_POWER);
 			physicsBody->setVelocity(normalInput * finalPower);
 			mIsTouched = false;
 		}
 	};
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
+	owner->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, owner);
+	owner->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, owner);
 
-	schedule(CC_SCHEDULE_SELECTOR(Striker::tick), 0.3f);
 	return true;
-}
-
-void Striker::tick(float dt)
-{
-	/*auto sprite1 = addSpriteAtPosition(Vec2(center.x + cocos2d::random(-300, 300),
-		center.y + cocos2d::random(-300, 300)));
-	auto physicsBody = sprite1->getPhysicsBody();
-	physicsBody->setVelocity(Vec2(cocos2d::random(-500, 500), cocos2d::random(-500, 500)));
-	physicsBody->setContactTestBitmask(0xFFFFFFFF);*/
 }
 
 bool Striker::onContactBegin(PhysicsContact& contact)
@@ -96,19 +69,33 @@ bool Striker::onContactBegin(PhysicsContact& contact)
 
 	if (nodeA && nodeB)
 	{
-		if (nodeA->getTag() == TAG_WALL)
+		if (nodeA->getTag() == CARROM_TAG_HOLE && nodeB->getTag() == CARROM_TAG_DISK)
 		{
-			float lengthB = velocityB.getLengthSq();
-			float estimatedMax = 250000;
-			float volume = clampf(lengthB / estimatedMax, 0, 1);
-			AudioEngine::play2d("sounds/SFXDiskHit.mp3", false, volume);
+			Pocket(nodeB);
 		}
-		else if (nodeB->getTag() == TAG_WALL)
+		else if (nodeB->getTag() == CARROM_TAG_HOLE && nodeA->getTag() == CARROM_TAG_DISK)
+		{
+			Pocket(nodeA);
+		}
+		else if (nodeA->getTag() == CARROM_TAG_DISK || nodeB->getTag() == CARROM_TAG_DISK)
 		{
 			float lengthA = velocityA.getLengthSq();
-			float estimatedMax = 250000;
-			float volume = clampf(lengthA / estimatedMax, 0, 1);
-			AudioEngine::play2d("sounds/SFXDiskHit.mp3", false, volume);
+			float lengthB = velocityB.getLengthSq();
+			float estimatedMax = CARROM_PARAM_STRIKER_MAX_POWER * CARROM_PARAM_STRIKER_MAX_POWER;
+			lengthA > lengthB ? PlayHitSound(lengthA / estimatedMax) : PlayHitSound(lengthB / estimatedMax);
+		}
+
+		if (nodeA->getTag() == CARROM_TAG_WALL && nodeB->getTag() == CARROM_TAG_STRIKER)
+		{
+			float lengthB = velocityB.getLengthSq();
+			float estimatedMax = CARROM_PARAM_STRIKER_MAX_POWER * CARROM_PARAM_STRIKER_MAX_POWER;
+			PlayHitSound(lengthB / estimatedMax);
+		}
+		else if (nodeB->getTag() == CARROM_TAG_WALL && nodeA->getTag() == CARROM_TAG_STRIKER)
+		{
+			float lengthA = velocityA.getLengthSq();
+			float estimatedMax = CARROM_PARAM_STRIKER_MAX_POWER * CARROM_PARAM_STRIKER_MAX_POWER;
+			PlayHitSound(lengthA / estimatedMax);
 		}
 	}
 

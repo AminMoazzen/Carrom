@@ -166,9 +166,9 @@ bool MainMenu::init()
 	const float bgMusicTempo = 114.0f;
 	schedule(CC_SCHEDULE_SELECTOR(MainMenu::tick), 60.0f / bgMusicTempo);
 
-	auto currentDisk = disks[index];
-	auto moveBy = MoveBy::create(bgMusicTempo / 2, Vec2(0, currentDisk->getContentSize().height));
-	currentDisk->runAction(moveBy);
+	//auto currentDisk = disks[index];
+	//auto moveBy = MoveBy::create(bgMusicTempo / 2, Vec2(0, currentDisk->getContentSize().height));
+	//currentDisk->runAction(moveBy);
 
 	return true;
 }

@@ -2,23 +2,19 @@
 #define __CARROM_DISK_H__
 
 #include "cocos2d.h"
+#include "AudioEngine.h"
 
 USING_NS_CC;
 
-enum class DiskType
-{
-	White,
-	Black,
-	Red,
-};
+using namespace experimental;
 
-class Disk : public Sprite
+class Disk : public Component
 {
 public:
-	static Disk* create(DiskType type)
+	static Disk* create()
 	{
 		Disk* disk = new Disk();
-		if (disk && disk->init(type))
+		if (disk && disk->init())
 		{
 			disk->autorelease();
 			return disk;
@@ -27,10 +23,10 @@ public:
 		return NULL;
 	};
 
-	bool init(DiskType type);
-	void tick(float dt);
-	bool onContactBegin(PhysicsContact& contact);
-	void Destroy();
+	bool setup(PhysicsMaterial& material, float damping);
+
+private:
+	bool init();
 };
 
 #endif // __CARROM_DISK_H__
