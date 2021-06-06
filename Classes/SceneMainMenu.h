@@ -2,6 +2,9 @@
 #define __CARROM_SCENE_MAINMENU_H__
 
 #include "cocos2d.h"
+#include "CCVector.h"
+
+USING_NS_CC;
 
 class MainMenu : public cocos2d::Scene
 {
@@ -14,6 +17,13 @@ public:
 	void startButtonCallback(cocos2d::Ref* pSender);
 
 	CREATE_FUNC(MainMenu);
+
+private:
+	int bgMusicID = -1;
+	int index = 0;
+	std::vector <Sprite*> disks;
+
+	void tick(float dt);
 };
 
 #endif // __CARROM_SCENE_MAINMENU_H__

@@ -11,8 +11,7 @@ bool Hole::init()
 
 	std::string fileName = "Hole.png";
 
-	//auto sprite = Sprite::create(fileName);
-	this->setTexture(fileName);
+	this->setSpriteFrame(fileName);
 	/*if (sprite == nullptr)
 	{
 		return false;
@@ -20,7 +19,7 @@ bool Hole::init()
 
 	//sprite->setPosition(position);
 	auto spriteSize = this->getContentSize();
-	auto physicsBody = PhysicsBody::createCircle(spriteSize.width / 2,
+	auto physicsBody = PhysicsBody::createCircle(spriteSize.width / 10,
 		PhysicsMaterial(0.0f, 0.0f, 0.0f));
 	physicsBody->setRotationEnable(false);
 	physicsBody->setDynamic(false);

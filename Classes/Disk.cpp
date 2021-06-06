@@ -1,8 +1,10 @@
 #include "Disk.h"
-#include "SimpleAudioEngine.h"
 #include "CarromConfig.h"
+#include "AudioEngine.h"
 
 USING_NS_CC;
+
+using namespace experimental;
 
 bool Disk::init(DiskType type)
 {
@@ -22,7 +24,7 @@ bool Disk::init(DiskType type)
 		fileName = "DiskRed.png";
 		break;
 	}
-	this->setTexture(fileName);
+	this->setSpriteFrame(fileName);
 	//auto sprite = Sprite::create(fileName);
 	//if (sprite == nullptr)
 	//{
@@ -38,7 +40,11 @@ bool Disk::init(DiskType type)
 	//physicsBody->setDynamic(false);
 	physicsBody->setGravityEnable(false);
 	physicsBody->setCategoryBitmask(CATEGORY_BITMASK_DISK);
-	physicsBody->setContactTestBitmask(CATEGORY_BITMASK_STRIKER | CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_HOLE);
+	physicsBody->setContactTestBitmask(
+		CATEGORY_BITMASK_STRIKER
+		| CATEGORY_BITMASK_DISK
+		| CATEGORY_BITMASK_HOLE
+		| CATEGORY_BITMASK_WALL);
 
 	this->addComponent(physicsBody);
 	this->setTag(TAG_DISK);
@@ -66,18 +72,33 @@ void Disk::tick(float dt)
 bool Disk::onContactBegin(PhysicsContact& contact)
 {
 	//this->setScale(this->_scaleX * 1.1f);
-	auto nodeA = contact.getShapeA()->getBody()->getNode();
-	auto nodeB = contact.getShapeB()->getBody()->getNode();
+	auto bodyA = contact.getShapeA()->getBody();
+	auto velocityA = bodyA->getVelocity();
+	auto nodeA = bodyA->getNode();
+
+	auto bodyB = contact.getShapeB()->getBody();
+	auto velocityB = bodyB->getVelocity();
+	auto nodeB = bodyB->getNode();
 
 	if (nodeA && nodeB)
 	{
 		if (nodeA->getTag() == TAG_HOLE)
 		{
+			AudioEngine::play2d("sounds/SFXDiskPocket.mp3");
 			nodeB->removeFromParentAndCleanup(true);
 		}
 		else if (nodeB->getTag() == TAG_HOLE)
 		{
+			AudioEngine::play2d("sounds/SFXDiskPocket.mp3");
 			nodeA->removeFromParentAndCleanup(true);
+		}
+		else if (nodeA->getTag() == TAG_DISK || nodeB->getTag() == TAG_DISK)
+		{
+			float lengthA = velocityA.getLengthSq();
+			float lengthB = velocityB.getLengthSq();
+			float estimatedMax = 250000;
+			float volume = lengthA > lengthB ? clampf(lengthA / estimatedMax, 0, 1) : clampf(lengthB / estimatedMax, 0, 1);
+			AudioEngine::play2d("sounds/SFXDiskHit.mp3", false, volume);
 		}
 	}
 

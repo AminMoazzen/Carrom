@@ -1,10 +1,8 @@
-#define PI   3.1415926535897932385f
-
 #include "SceneGame.h"
-#include "SimpleAudioEngine.h"
 #include "Disk.h"
 #include "Striker.h"
 #include "Hole.h"
+#include "CarromConfig.h"
 
 USING_NS_CC;
 
@@ -32,7 +30,7 @@ bool Game::init()
 	bgColor->setContentSize(Size(visibleSize.width * 2, visibleSize.height * 2));
 	this->addChild(bgColor, -10);
 
-	auto table = Sprite::create("Table.png");
+	auto table = Sprite::createWithSpriteFrameName("Table.png");
 	if (table == nullptr)
 	{
 		return false;
@@ -42,9 +40,8 @@ bool Game::init()
 	this->addChild(table, 0);
 
 	auto tableSize = table->getContentSize();
-	
 
-	auto topEdge = Sprite::create("TableTopEdge.png");
+	auto topEdge = Sprite::create("sprites/TableTopEdge.png");
 	if (topEdge == nullptr)
 	{
 		return false;
@@ -58,11 +55,13 @@ bool Game::init()
 			Size(topEdge->getContentSize().width, topEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 1.0f));
 		physicsBody->setDynamic(false);
+		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
 
 		topEdge->addComponent(physicsBody);
 	}
 
-	auto botEdge = Sprite::create("TableBotEdge.png");
+	auto botEdge = Sprite::create("sprites/TableBotEdge.png");
 	if (botEdge == nullptr)
 	{
 		return false;
@@ -76,11 +75,13 @@ bool Game::init()
 			Size(botEdge->getContentSize().width, botEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 0.0f));
 		physicsBody->setDynamic(false);
+		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
 
 		botEdge->addComponent(physicsBody);
 	}
 
-	auto rightEdge = Sprite::create("TableRightEdge.png");
+	auto rightEdge = Sprite::create("sprites/TableRightEdge.png");
 	if (rightEdge == nullptr)
 	{
 		return false;
@@ -94,11 +95,13 @@ bool Game::init()
 			Size(rightEdge->getContentSize().width, rightEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 0.0f));
 		physicsBody->setDynamic(false);
+		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
 
 		rightEdge->addComponent(physicsBody);
 	}
 
-	auto leftEdge = Sprite::create("TableLeftEdge.png");
+	auto leftEdge = Sprite::create("sprites/TableLeftEdge.png");
 	if (leftEdge == nullptr)
 	{
 		return false;
@@ -112,6 +115,8 @@ bool Game::init()
 			Size(leftEdge->getContentSize().width, leftEdge->getContentSize().height),
 			PhysicsMaterial(0.1f, 1.0f, 0.0f));
 		physicsBody->setDynamic(false);
+		physicsBody->setCategoryBitmask(CATEGORY_BITMASK_WALL);
+		physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_STRIKER);
 
 		leftEdge->addComponent(physicsBody);
 	}
@@ -181,7 +186,6 @@ bool Game::init()
 		hole->setPosition(Vec2(center.x - tableSize.width / 2, center.y + tableSize.height / 2));
 		this->addChild(hole, 1);
 	}
-
 
 	return true;
 }

@@ -1,15 +1,17 @@
 #include "Striker.h"
-#include "SimpleAudioEngine.h"
 #include "CarromConfig.h"
+#include "AudioEngine.h"
 
 USING_NS_CC;
+
+using namespace experimental;
 
 bool Striker::init()
 {
 	//auto visibleSize = Director::getInstance()->getVisibleSize();
 
 	std::string fileName = "DiskStriker.png";
-	auto sprite = Sprite::create(fileName);
+	auto sprite = Sprite::createWithSpriteFrameName(fileName);
 	if (sprite == nullptr)
 	{
 		return false;
@@ -26,6 +28,7 @@ bool Striker::init()
 	physicsBody->setGravityEnable(false);
 	physicsBody->setTag(TAG_STRIKER);
 	physicsBody->setCategoryBitmask(CATEGORY_BITMASK_STRIKER);
+	physicsBody->setContactTestBitmask(CATEGORY_BITMASK_DISK | CATEGORY_BITMASK_WALL);
 
 	this->addComponent(physicsBody);
 	this->setContentSize(sprite->getContentSize());
@@ -57,8 +60,11 @@ bool Striker::init()
 		if (mIsTouched)
 		{
 			auto touchLocation = touch->getLocation();
-			Vec2 forceDirection = this->getPosition() - touchLocation;
-			physicsBody->setVelocity(forceDirection * power);
+			Vec2 inputDirection = this->getPosition() - touchLocation;
+			float inputPower = inputDirection.getLength();
+			Vec2 normalInput = inputDirection / inputPower;
+			float finalPower = clampf(inputPower * power, 0, 500);
+			physicsBody->setVelocity(normalInput * finalPower);
 			mIsTouched = false;
 		}
 	};
@@ -80,20 +86,31 @@ void Striker::tick(float dt)
 
 bool Striker::onContactBegin(PhysicsContact& contact)
 {
-	//auto nodeA = contact.getShapeA()->getBody()->getNode();
-	//auto nodeB = contact.getShapeB()->getBody()->getNode();
+	auto bodyA = contact.getShapeA()->getBody();
+	auto velocityA = bodyA->getVelocity();
+	auto nodeA = bodyA->getNode();
 
-	//if (nodeA && nodeB)
-	//{
-	//	if (nodeA->getTag() == TAG_DISK)
-	//	{
-	//		nodeB->removeFromParentAndCleanup(true);
-	//	}
-	//	else if (nodeB->getTag() == TAG_DISK)
-	//	{
-	//		nodeA->removeFromParentAndCleanup(true);
-	//	}
-	//}
+	auto bodyB = contact.getShapeB()->getBody();
+	auto velocityB = bodyB->getVelocity();
+	auto nodeB = bodyB->getNode();
+
+	if (nodeA && nodeB)
+	{
+		if (nodeA->getTag() == TAG_WALL)
+		{
+			float lengthB = velocityB.getLengthSq();
+			float estimatedMax = 250000;
+			float volume = clampf(lengthB / estimatedMax, 0, 1);
+			AudioEngine::play2d("sounds/SFXDiskHit.mp3", false, volume);
+		}
+		else if (nodeB->getTag() == TAG_WALL)
+		{
+			float lengthA = velocityA.getLengthSq();
+			float estimatedMax = 250000;
+			float volume = clampf(lengthA / estimatedMax, 0, 1);
+			AudioEngine::play2d("sounds/SFXDiskHit.mp3", false, volume);
+		}
+	}
 
 	return true;
 }

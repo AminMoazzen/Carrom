@@ -25,7 +25,7 @@
 #include "AppDelegate.h"
 #include "SceneMainMenu.h"
 
- // #define USE_AUDIO_ENGINE 1
+#define USE_AUDIO_ENGINE 1
  // #define USE_SIMPLE_AUDIO_ENGINE 1
 
 #if USE_AUDIO_ENGINE && USE_SIMPLE_AUDIO_ENGINE
@@ -119,6 +119,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
 	// create a scene. it's an autorelease object
 	auto mainMenu = MainMenu::createScene();
+
+	AudioEngine::preload("sounds/MusicMenu.mp3");
+	AudioEngine::preload("sounds/SFXButton.mp3");
+	AudioEngine::preload("sounds/SFXDiskPocket.mp3");
+	AudioEngine::preload("sounds/SFXDiskPocket.mp3");
 
 	// run
 	director->runWithScene(mainMenu);

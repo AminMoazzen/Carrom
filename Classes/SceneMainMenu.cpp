@@ -1,8 +1,11 @@
 #include "SceneMainMenu.h"
 #include "SimpleAudioEngine.h"
 #include "SceneGame.h"
+#include "AudioEngine.h"
 
 USING_NS_CC;
+
+using namespace experimental;
 
 Scene* MainMenu::createScene()
 {
@@ -20,6 +23,8 @@ bool MainMenu::init()
 	{
 		return false;
 	}
+
+	bgMusicID = AudioEngine::play2d("sounds/MusicMenu.mp3", true);
 
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -47,10 +52,18 @@ bool MainMenu::init()
 		closeItem->setPosition(Vec2(x, y));
 	}
 
-	auto startItem = MenuItemImage::create(
-		"ButtonStartNormal.png",
-		"ButtonStartPressed.png",
-		CC_CALLBACK_1(MainMenu::startButtonCallback, this));
+	auto startItem = MenuItemImage::create();
+
+	auto spriteCache = SpriteFrameCache::getInstance();
+
+	// the .plist file can be generated with any of the tools mentioned below
+	spriteCache->addSpriteFramesWithFile("sprites/Sprites.plist");
+	auto normalSpriteFrame = spriteCache->getSpriteFrameByName("ButtonStartNormal.png");
+	auto selectedSpriteFrame = spriteCache->getSpriteFrameByName("ButtonStartPressed.png");
+
+	startItem->setNormalSpriteFrame(normalSpriteFrame);
+	startItem->setSelectedSpriteFrame(selectedSpriteFrame);
+	startItem->setCallback(CC_CALLBACK_1(MainMenu::startButtonCallback, this));
 
 	startItem->setAnchorPoint(cocos2d::Vec2(0.5, 0.0));
 
@@ -67,7 +80,7 @@ bool MainMenu::init()
 		startItem->setPosition(Vec2(x, y));
 	}
 
-	auto labelStart = Label::createWithTTF("Start", "fonts/Marker Felt.ttf", 24);
+	auto labelStart = Label::createWithTTF("Practice", "fonts/Marker Felt.ttf", 18);
 	if (labelStart == nullptr)
 	{
 		problemLoading("'fonts/Marker Felt.ttf'");
@@ -91,8 +104,8 @@ bool MainMenu::init()
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu, 1);
 
-	/////////////////////////////
-	// 3. add your codes below...
+	///////////////////////////////
+	//// 3. add your codes below...
 
 	// add a label shows "Hello World"
 	// create and initialize a label
@@ -112,7 +125,7 @@ bool MainMenu::init()
 		this->addChild(label, 1);
 	}
 
-	auto background = Sprite::create("MenuBackground.png");
+	auto background = Sprite::create("sprites/MenuBackground.png");
 	if (background == nullptr)
 	{
 		problemLoading("'MenuBackground.png'");
@@ -132,18 +145,46 @@ bool MainMenu::init()
 		this->addChild(background, -10);
 	}
 
-	auto splash = Sprite::create("Splash.png");
-	if (splash == nullptr)
-	{
-		problemLoading("'Splash.png'");
-	}
-	else
-	{
-		splash->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+	disks.push_back(Sprite::createWithSpriteFrameName("DiskWhite.png"));
+	disks.push_back(Sprite::createWithSpriteFrameName("DiskRed.png"));
+	disks.push_back(Sprite::createWithSpriteFrameName("DiskBlack.png"));
 
-		this->addChild(splash, 0);
+	auto diskSize = disks[0]->getContentSize();
+	int halfDisksSize = disks.size() / 2;
+	for (int i = 0; i < disks.size(); ++i)
+	{
+		disks[i]->setPosition(Vec2(visibleSize.width / 2 + origin.x + 4 * (i - halfDisksSize) * diskSize.width, visibleSize.height / 2 + origin.y));
+		disks[i]->setScale(2.0);
+		this->addChild(disks[i], 0);
 	}
+
+	// The background music tempo is 114 BPM
+	const float beatDeltaTime = 60.0f / 114.0f;
+	schedule(CC_SCHEDULE_SELECTOR(MainMenu::tick), beatDeltaTime);
+
+	auto currentDisk = disks[index];
+	auto moveBy = MoveBy::create(beatDeltaTime / 2, Vec2(0, currentDisk->getContentSize().height));
+	currentDisk->runAction(moveBy);
+
 	return true;
+}
+
+void MainMenu::tick(float dt)
+{
+	float moveDuration = dt / 2;
+	auto currentDisk = disks[index];
+	auto moveBy = MoveBy::create(moveDuration, Vec2(0, -currentDisk->getContentSize().height));
+	currentDisk->runAction(moveBy);
+
+	int prev = index;
+	do
+	{
+		index = random(0, (int)disks.size() - 1);
+	} while (prev == index);
+
+	currentDisk = disks[index];
+	moveBy = MoveBy::create(moveDuration, Vec2(0, currentDisk->getContentSize().height));
+	currentDisk->runAction(moveBy);
 }
 
 void MainMenu::menuCloseCallback(Ref* pSender)
@@ -159,6 +200,8 @@ void MainMenu::menuCloseCallback(Ref* pSender)
 
 void MainMenu::startButtonCallback(Ref* pSender)
 {
+	AudioEngine::stop(bgMusicID);
+	AudioEngine::play2d("sounds/SFXButton.mp3");
 	Director::getInstance()->pushScene(this);
 
 	auto game = Game::createScene();
