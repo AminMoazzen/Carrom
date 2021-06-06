@@ -3,7 +3,9 @@
 
 #include "cocos2d.h"
 
-class Game : public cocos2d::Scene
+USING_NS_CC;
+
+class Game : public Scene
 {
 public:
 	static cocos2d::Scene* createScene();
@@ -15,6 +17,9 @@ public:
 
 	// implement the "static create()" method manually
 	CREATE_FUNC(Game);
+
+private:
+	void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
 };
 
 #endif // __CARROM_SCENE_GAME_H__

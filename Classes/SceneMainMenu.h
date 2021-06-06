@@ -24,6 +24,7 @@ private:
 	std::vector <Sprite*> disks;
 
 	void tick(float dt);
+	void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
 };
 
 #endif // __CARROM_SCENE_MAINMENU_H__

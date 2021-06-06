@@ -19,11 +19,17 @@ bool Game::init()
 		return false;
 	}
 
-	auto visibleSize = Director::getInstance()->getVisibleSize();
-	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	auto director = Director::getInstance();
+
+	auto visibleSize = director->getVisibleSize();
+	Vec2 origin = director->getVisibleOrigin();
 	Vec2 center = Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y);
 
-	//Director::getInstance()->setClearColor(Color4F(83.0 / 255.0, 51.0 / 255.0, 8.0 / 255.0, 1));
+	auto listener = EventListenerKeyboard::create();
+	listener->onKeyReleased = CC_CALLBACK_2(Game::onKeyReleased, this);
+	director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+
+	//director->setClearColor(Color4F(83.0 / 255.0, 51.0 / 255.0, 8.0 / 255.0, 1));
 	LayerColor* bgColor = LayerColor::create(Color4B(20, 10, 0, 255));
 	bgColor->setAnchorPoint(origin);
 	bgColor->setPosition(Vec2::ZERO);
@@ -190,13 +196,11 @@ bool Game::init()
 	return true;
 }
 
-void Game::menuCloseCallback(Ref* pSender)
+void Game::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
 {
-	//Close the cocos2d-x game scene and quit the application
-	Director::getInstance()->end();
-
-	/*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
-
-	//EventCustom customEndEvent("game_scene_close_event");
-	//_eventDispatcher->dispatchEvent(&customEndEvent);
+	if (keyCode == EventKeyboard::KeyCode::KEY_BACK)
+	{
+		//Director::getInstance()->end();
+		Director::getInstance()->popScene();
+	}
 }

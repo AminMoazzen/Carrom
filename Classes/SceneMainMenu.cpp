@@ -26,8 +26,9 @@ bool MainMenu::init()
 
 	bgMusicID = AudioEngine::play2d("sounds/MusicMenu.mp3", true);
 
-	auto visibleSize = Director::getInstance()->getVisibleSize();
-	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	auto director = Director::getInstance();
+	auto visibleSize = director->getVisibleSize();
+	Vec2 origin = director->getVisibleOrigin();
 
 	/////////////////////////////
 	// 2. add a menu item with "X" image, which is clicked to quit the program
@@ -39,18 +40,18 @@ bool MainMenu::init()
 		"CloseSelected.png",
 		CC_CALLBACK_1(MainMenu::menuCloseCallback, this));
 
-	if (closeItem == nullptr ||
-		closeItem->getContentSize().width <= 0 ||
-		closeItem->getContentSize().height <= 0)
-	{
-		problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-	}
-	else
-	{
-		float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2;
-		float y = origin.y + closeItem->getContentSize().height / 2;
-		closeItem->setPosition(Vec2(x, y));
-	}
+	//if (closeItem == nullptr ||
+	//	closeItem->getContentSize().width <= 0 ||
+	//	closeItem->getContentSize().height <= 0)
+	//{
+	//	problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
+	//}
+	//else
+	//{
+	//	float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2;
+	//	float y = origin.y + closeItem->getContentSize().height / 2;
+	//	closeItem->setPosition(Vec2(x, y));
+	//}
 
 	auto startItem = MenuItemImage::create();
 
@@ -100,9 +101,13 @@ bool MainMenu::init()
 	}
 
 	// create menu, it's an autorelease object
-	auto menu = Menu::create(closeItem, startItem, NULL);
+	auto menu = Menu::create(startItem, NULL);
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu, 1);
+
+	auto listener = EventListenerKeyboard::create();
+	listener->onKeyReleased = CC_CALLBACK_2(MainMenu::onKeyReleased, this);
+	director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
 
 	///////////////////////////////
 	//// 3. add your codes below...
@@ -158,12 +163,11 @@ bool MainMenu::init()
 		this->addChild(disks[i], 0);
 	}
 
-	// The background music tempo is 114 BPM
-	const float beatDeltaTime = 60.0f / 114.0f;
-	schedule(CC_SCHEDULE_SELECTOR(MainMenu::tick), beatDeltaTime);
+	const float bgMusicTempo = 114.0f;
+	schedule(CC_SCHEDULE_SELECTOR(MainMenu::tick), 60.0f / bgMusicTempo);
 
 	auto currentDisk = disks[index];
-	auto moveBy = MoveBy::create(beatDeltaTime / 2, Vec2(0, currentDisk->getContentSize().height));
+	auto moveBy = MoveBy::create(bgMusicTempo / 2, Vec2(0, currentDisk->getContentSize().height));
 	currentDisk->runAction(moveBy);
 
 	return true;
@@ -189,21 +193,33 @@ void MainMenu::tick(float dt)
 
 void MainMenu::menuCloseCallback(Ref* pSender)
 {
-	//Close the cocos2d-x game scene and quit the application
-	Director::getInstance()->end();
+}
 
-	/*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
+void MainMenu::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
+{
+	if (keyCode == EventKeyboard::KeyCode::KEY_BACK)
+	{
+		//Close the cocos2d-x game scene and quit the application
+		Director::getInstance()->end();
 
-	//EventCustom customEndEvent("game_scene_close_event");
-	//_eventDispatcher->dispatchEvent(&customEndEvent);
+		/* To navigate back to native iOS screen(if present) without quitting the application,
+		 * do not use Director::getInstance()->end() as given above, instead trigger a custom event
+		 * created in RootViewController.mm as below
+		*/
+
+		//EventCustom customEndEvent("game_scene_close_event");
+		//_eventDispatcher->dispatchEvent(&customEndEvent);
+	}
 }
 
 void MainMenu::startButtonCallback(Ref* pSender)
 {
 	AudioEngine::stop(bgMusicID);
 	AudioEngine::play2d("sounds/SFXButton.mp3");
-	Director::getInstance()->pushScene(this);
 
+	auto director = Director::getInstance();
 	auto game = Game::createScene();
-	Director::getInstance()->replaceScene(game);
+	director->pushScene(game);
+
+	//director->replaceScene(game);
 }
