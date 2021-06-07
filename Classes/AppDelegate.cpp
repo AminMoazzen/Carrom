@@ -96,6 +96,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	// create a scene. it's an autorelease object
 	auto mainMenu = MainMenu::createScene();
 
+	Director::getInstance()->setClearColor(Color4F(83.0 / 255.0, 51.0 / 255.0, 8.0 / 255.0, 1));
+
 	AudioEngine::preload("sounds/MusicMenu.mp3");
 	AudioEngine::preload("sounds/SFXButton.mp3");
 	AudioEngine::preload("sounds/SFXDiskPocket.mp3");
@@ -105,7 +107,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->runWithScene(mainMenu);
 
 	return true;
-	}
+}
 
 // This function will be called when the app is inactive. Note, when receiving a phone call it is invoked.
 void AppDelegate::applicationDidEnterBackground() {

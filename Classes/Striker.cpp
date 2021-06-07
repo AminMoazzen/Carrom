@@ -14,7 +14,7 @@ bool Striker::setup(PhysicsMaterial& material, float damping)
 
 	auto physicsBody = PhysicsBody::createCircle(owner->getContentSize().width / 2, material);
 	physicsBody->setRotationEnable(false);
-	physicsBody->setLinearDamping(0.5);
+	physicsBody->setLinearDamping(damping);
 	physicsBody->setGravityEnable(false);
 	physicsBody->setTag(CARROM_TAG_STRIKER);
 	physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_STRIKER);

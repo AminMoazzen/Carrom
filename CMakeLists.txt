@@ -54,6 +54,7 @@ list(APPEND GAME_SOURCE
      Classes/Disk.cpp
      Classes/Striker.cpp
      Classes/Hole.cpp
+     Classes/Wall.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -63,6 +64,7 @@ list(APPEND GAME_HEADER
      Classes/Striker.h
      Classes/Hole.h
      Classes/CarromConfig.h
+     Classes/Wall.h
      )
 
 if(ANDROID)

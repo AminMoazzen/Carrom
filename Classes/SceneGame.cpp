@@ -3,6 +3,7 @@
 #include "Striker.h"
 #include "Hole.h"
 #include "CarromConfig.h"
+#include "Wall.h"
 
 USING_NS_CC;
 
@@ -29,107 +30,63 @@ bool Game::init()
 	listener->onKeyReleased = CC_CALLBACK_2(Game::onKeyReleased, this);
 	director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
 
-	//director->setClearColor(Color4F(83.0 / 255.0, 51.0 / 255.0, 8.0 / 255.0, 1));
-	LayerColor* bgColor = LayerColor::create(Color4B(20, 10, 0, 255));
-	bgColor->setAnchorPoint(origin);
-	bgColor->setPosition(Vec2::ZERO);
-	bgColor->setContentSize(Size(visibleSize.width * 2, visibleSize.height * 2));
-	this->addChild(bgColor, -10);
-
 	auto table = Sprite::createWithSpriteFrameName("Table.png");
 	if (table == nullptr)
-	{
 		return false;
-	}
 
 	table->setPosition(center);
-	this->addChild(table, 0);
+	this->addChild(table, CARROM_Z_LAYER_BACKGROUND);
 
 	auto tableSize = table->getContentSize();
 
 	auto topEdge = Sprite::create("sprites/TableTopEdge.png");
 	if (topEdge == nullptr)
-	{
 		return false;
-	}
-	else
-	{
-		topEdge->setAnchorPoint(Vec2(0.5, 0.0));
-		topEdge->setPosition(Vec2(center.x, center.y + tableSize.height / 2));
-		this->addChild(topEdge, 1);
-		auto physicsBody = PhysicsBody::createBox(
-			Size(topEdge->getContentSize().width, topEdge->getContentSize().height),
-			PhysicsMaterial(0.1f, 1.0f, 1.0f));
-		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
-		topEdge->setTag(CARROM_TAG_WALL);
 
-		topEdge->addComponent(physicsBody);
-	}
+	auto wall = Wall::create();
+	topEdge->addComponent(wall);
+	wall->setup();
+
+	topEdge->setAnchorPoint(Vec2(0.5, 0.0));
+	topEdge->setPosition(Vec2(center.x, center.y + tableSize.height / 2));
+	this->addChild(topEdge, CARROM_Z_LAYER_BACKGROUND);
 
 	auto botEdge = Sprite::create("sprites/TableBotEdge.png");
 	if (botEdge == nullptr)
-	{
 		return false;
-	}
-	else
-	{
-		botEdge->setAnchorPoint(Vec2(0.5, 1.0));
-		botEdge->setPosition(Vec2(center.x, center.y - tableSize.height / 2));
-		this->addChild(botEdge, 1);
-		auto physicsBody = PhysicsBody::createBox(
-			Size(botEdge->getContentSize().width, botEdge->getContentSize().height),
-			PhysicsMaterial(0.1f, 1.0f, 0.0f));
-		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
-		botEdge->setTag(CARROM_TAG_WALL);
 
-		botEdge->addComponent(physicsBody);
-	}
+	wall = Wall::create();
+	botEdge->addComponent(wall);
+	wall->setup();
+
+	botEdge->setAnchorPoint(Vec2(0.5, 1.0));
+	botEdge->setPosition(Vec2(center.x, center.y - tableSize.height / 2));
+	this->addChild(botEdge, CARROM_Z_LAYER_BACKGROUND);
 
 	auto rightEdge = Sprite::create("sprites/TableRightEdge.png");
 	if (rightEdge == nullptr)
-	{
 		return false;
-	}
-	else
-	{
-		rightEdge->setAnchorPoint(Vec2(0.0, 0.5));
-		rightEdge->setPosition(Vec2(center.x + tableSize.width / 2, center.y));
-		this->addChild(rightEdge, 1);
-		auto physicsBody = PhysicsBody::createBox(
-			Size(rightEdge->getContentSize().width, rightEdge->getContentSize().height),
-			PhysicsMaterial(0.1f, 1.0f, 0.0f));
-		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
-		rightEdge->setTag(CARROM_TAG_WALL);
 
-		rightEdge->addComponent(physicsBody);
-	}
+	wall = Wall::create();
+	rightEdge->addComponent(wall);
+	wall->setup();
+
+	rightEdge->setAnchorPoint(Vec2(0.0, 0.5));
+	rightEdge->setPosition(Vec2(center.x + tableSize.width / 2, center.y));
+	this->addChild(rightEdge, CARROM_Z_LAYER_BACKGROUND);
 
 	auto leftEdge = Sprite::create("sprites/TableLeftEdge.png");
 	if (leftEdge == nullptr)
-	{
 		return false;
-	}
-	else
-	{
-		leftEdge->setAnchorPoint(Vec2(1.0, 0.5));
-		leftEdge->setPosition(Vec2(center.x - tableSize.width / 2, center.y));
-		this->addChild(leftEdge, 1);
-		auto physicsBody = PhysicsBody::createBox(
-			Size(leftEdge->getContentSize().width, leftEdge->getContentSize().height),
-			PhysicsMaterial(0.1f, 1.0f, 0.0f));
-		physicsBody->setDynamic(false);
-		physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_WALL);
-		physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_STRIKER);
-		leftEdge->setTag(CARROM_TAG_WALL);
 
-		leftEdge->addComponent(physicsBody);
-	}
+	wall = Wall::create();
+	leftEdge->addComponent(wall);
+	wall->setup();
+
+	leftEdge->setAnchorPoint(Vec2(1.0, 0.5));
+	leftEdge->setPosition(Vec2(center.x - tableSize.width / 2, center.y));
+
+	this->addChild(leftEdge, CARROM_Z_LAYER_BACKGROUND);
 
 	auto physicsMaterial = PhysicsMaterial(0.1f, 0.75f, 1.0f);
 
