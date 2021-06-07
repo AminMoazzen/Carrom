@@ -88,7 +88,7 @@ bool Game::init()
 
 	this->addChild(leftEdge, CARROM_Z_LAYER_BACKGROUND);
 
-	auto physicsMaterial = PhysicsMaterial(0.1f, 0.75f, 1.0f);
+	auto physicsMaterial = PhysicsMaterial(0.1f, 0.75f, 0.5f);
 
 	auto strikerSprite = Sprite::createWithSpriteFrameName("DiskStriker.png");
 	auto striker = Striker::create();
