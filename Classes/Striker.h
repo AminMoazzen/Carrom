@@ -29,6 +29,7 @@ public:
 
 private:
 	bool mIsTouched = false;
+	Vec2 mInitialTouchPos = Vec2::ZERO;
 
 	bool init();
 	bool onContactBegin(PhysicsContact& contact);

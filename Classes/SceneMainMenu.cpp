@@ -1,7 +1,7 @@
 #include "SceneMainMenu.h"
-#include "SimpleAudioEngine.h"
 #include "SceneGame.h"
 #include "AudioEngine.h"
+#include "CarromConfig.h"
 
 USING_NS_CC;
 
@@ -20,136 +20,52 @@ static void problemLoading(const char* filename)
 bool MainMenu::init()
 {
 	if (!Scene::init())
-	{
 		return false;
-	}
 
-	bgMusicID = AudioEngine::play2d("sounds/MusicMenu.mp3", true);
+	// Cache spritesheet
+	auto spriteCache = SpriteFrameCache::getInstance();
+	spriteCache->addSpriteFramesWithFile("sprites/Sprites.plist");
 
 	auto director = Director::getInstance();
 	auto visibleSize = director->getVisibleSize();
 	Vec2 origin = director->getVisibleOrigin();
+	Vec2 center = Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2);
 
-	/////////////////////////////
-	// 2. add a menu item with "X" image, which is clicked to quit the program
-	//    you may modify it.
-
-	// add a "close" icon to exit the progress. it's an autorelease object
-	auto closeItem = MenuItemImage::create(
-		"CloseNormal.png",
-		"CloseSelected.png",
-		CC_CALLBACK_1(MainMenu::menuCloseCallback, this));
-
-	//if (closeItem == nullptr ||
-	//	closeItem->getContentSize().width <= 0 ||
-	//	closeItem->getContentSize().height <= 0)
-	//{
-	//	problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-	//}
-	//else
-	//{
-	//	float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2;
-	//	float y = origin.y + closeItem->getContentSize().height / 2;
-	//	closeItem->setPosition(Vec2(x, y));
-	//}
-
+	// Create Practice button
 	auto startItem = MenuItemImage::create();
-
-	auto spriteCache = SpriteFrameCache::getInstance();
-
-	// the .plist file can be generated with any of the tools mentioned below
-	spriteCache->addSpriteFramesWithFile("sprites/Sprites.plist");
 	auto normalSpriteFrame = spriteCache->getSpriteFrameByName("ButtonStartNormal.png");
 	auto selectedSpriteFrame = spriteCache->getSpriteFrameByName("ButtonStartPressed.png");
-
 	startItem->setNormalSpriteFrame(normalSpriteFrame);
 	startItem->setSelectedSpriteFrame(selectedSpriteFrame);
 	startItem->setCallback(CC_CALLBACK_1(MainMenu::startButtonCallback, this));
+	startItem->setAnchorPoint(Vec2(0.5, 0.0));
+	startItem->setPosition(Vec2(center.x, 50));
 
-	startItem->setAnchorPoint(cocos2d::Vec2(0.5, 0.0));
+	auto labelPractice = Label::createWithTTF("Practice", "fonts/Marker Felt.ttf", 18);
+	if (labelPractice == nullptr)
+		problemLoading("fonts/Marker Felt.ttf");
+	labelPractice->setPosition(Vec2(startItem->getContentSize().width / 2, startItem->getContentSize().height / 2));
+	startItem->addChild(labelPractice, CARROM_Z_LAYER_BACKGROUND + 2);
 
-	if (startItem == nullptr ||
-		startItem->getContentSize().width <= 0 ||
-		startItem->getContentSize().height <= 0)
-	{
-		problemLoading("'ButtonStartNormal.png' and 'ButtonStartPressed.png'");
-	}
-	else
-	{
-		float x = origin.x + visibleSize.width / 2;
-		float y = 50;
-		startItem->setPosition(Vec2(x, y));
-	}
-
-	auto labelStart = Label::createWithTTF("Practice", "fonts/Marker Felt.ttf", 18);
-	if (labelStart == nullptr)
-	{
-		problemLoading("'fonts/Marker Felt.ttf'");
-	}
-	else
-	{
-		// position the label on the center of the screen
-		//labelStart->setPosition(Vec2(origin.x + visibleSize.width / 2,
-			//origin.y + visibleSize.height - label->getContentSize().height));
-
-		float x = startItem->getContentSize().width / 2;
-		float y = startItem->getContentSize().height / 2;
-		labelStart->setPosition(Vec2(x, y));
-
-		// add the label as a child to this layer
-		startItem->addChild(labelStart, 1);
-	}
-
-	// create menu, it's an autorelease object
+	// Create menu
 	auto menu = Menu::create(startItem, NULL);
 	menu->setPosition(Vec2::ZERO);
-	this->addChild(menu, 1);
+	this->addChild(menu, CARROM_Z_LAYER_BACKGROUND + 1);
 
-	auto listener = EventListenerKeyboard::create();
-	listener->onKeyReleased = CC_CALLBACK_2(MainMenu::onKeyReleased, this);
-	director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+	// Create title Label
+	auto titleLabel = Label::createWithTTF("Carrom", "fonts/Marker Felt.ttf", 24);
+	titleLabel->setPosition(Vec2(center.x, origin.y + visibleSize.height - titleLabel->getContentSize().height));
+	this->addChild(titleLabel, CARROM_Z_LAYER_BACKGROUND + 1);
 
-	///////////////////////////////
-	//// 3. add your codes below...
-
-	// add a label shows "Hello World"
-	// create and initialize a label
-
-	auto label = Label::createWithTTF("Carrom", "fonts/Marker Felt.ttf", 24);
-	if (label == nullptr)
-	{
-		problemLoading("'fonts/Marker Felt.ttf'");
-	}
-	else
-	{
-		// position the label on the center of the screen
-		label->setPosition(Vec2(origin.x + visibleSize.width / 2,
-			origin.y + visibleSize.height - label->getContentSize().height));
-
-		// add the label as a child to this layer
-		this->addChild(label, 1);
-	}
-
+	// Create background image
 	auto background = Sprite::create("sprites/MenuBackground.png");
 	if (background == nullptr)
-	{
-		problemLoading("'MenuBackground.png'");
-	}
-	else
-	{
-		cocos2d::Texture2D::TexParams texParams = {
-			GL_NEAREST,
-			GL_NEAREST,
-			GL_REPEAT,
-			GL_REPEAT
-		};
-		background->getTexture()->setTexParameters(texParams);
-		background->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
-		background->setContentSize(Size(visibleSize.width * 2, visibleSize.height * 2));
+		problemLoading("sprites/MenuBackground.png");
+	background->setPosition(center);
+	background->setContentSize(Size(visibleSize.width * 2, visibleSize.height * 2));
+	this->addChild(background, CARROM_Z_LAYER_BACKGROUND);
 
-		this->addChild(background, -10);
-	}
-
+	// Create disks to animate
 	disks.push_back(Sprite::createWithSpriteFrameName("DiskWhite.png"));
 	disks.push_back(Sprite::createWithSpriteFrameName("DiskRed.png"));
 	disks.push_back(Sprite::createWithSpriteFrameName("DiskBlack.png"));
@@ -158,20 +74,24 @@ bool MainMenu::init()
 	int halfDisksSize = disks.size() / 2;
 	for (int i = 0; i < disks.size(); ++i)
 	{
-		disks[i]->setPosition(Vec2(visibleSize.width / 2 + origin.x + 4 * (i - halfDisksSize) * diskSize.width, visibleSize.height / 2 + origin.y));
+		disks[i]->setPosition(Vec2(
+			visibleSize.width / 2 + origin.x + 4 * (i - halfDisksSize) * diskSize.width,
+			visibleSize.height / 2 + origin.y));
 		disks[i]->setScale(2.0);
-		this->addChild(disks[i], 0);
+		this->addChild(disks[i], CARROM_Z_LAYER_BACKGROUND + 1);
 	}
 
+	// Add keyboard event listener for android back button callback
+	auto listener = EventListenerKeyboard::create();
+	listener->onKeyReleased = CC_CALLBACK_2(MainMenu::onKeyReleased, this);
+	director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+
+	// Create scheduler for main menu animation
 	const float bgMusicTempo = 114.0f;
 	schedule(CC_SCHEDULE_SELECTOR(MainMenu::tick), 60.0f / bgMusicTempo);
 
-	disks[index]->setPosition(Vec2(
-		disks[index]->getPosition().x,
-		disks[index]->getPosition().y + disks[index]->getContentSize().height));
-	//auto currentDisk = disks[index];
-	//auto moveBy = MoveBy::create(bgMusicTempo / 2, Vec2(0, currentDisk->getContentSize().height));
-	//currentDisk->runAction(moveBy);
+	Vec2 diskPos = disks[mDiskIndex]->getPosition();
+	disks[mDiskIndex]->setPosition(Vec2(diskPos.x, diskPos.y + disks[mDiskIndex]->getContentSize().height));
 
 	return true;
 }
@@ -179,23 +99,31 @@ bool MainMenu::init()
 void MainMenu::tick(float dt)
 {
 	float moveDuration = dt / 2;
-	auto currentDisk = disks[index];
+	auto currentDisk = disks[mDiskIndex];
 	auto moveBy = MoveBy::create(moveDuration, Vec2(0, -currentDisk->getContentSize().height));
 	currentDisk->runAction(moveBy);
 
-	int prev = index;
+	int prev = mDiskIndex;
 	do
 	{
-		index = random(0, (int)disks.size() - 1);
-	} while (prev == index);
+		mDiskIndex = random(0, (int)disks.size() - 1);
+	} while (prev == mDiskIndex);
 
-	currentDisk = disks[index];
+	currentDisk = disks[mDiskIndex];
 	moveBy = MoveBy::create(moveDuration, Vec2(0, currentDisk->getContentSize().height));
 	currentDisk->runAction(moveBy);
 }
 
-void MainMenu::menuCloseCallback(Ref* pSender)
+void MainMenu::onEnter()
 {
+	Node::onEnter();
+	mBgMusicID = AudioEngine::play2d("sounds/MusicMenu.mp3", true);
+}
+
+void MainMenu::onExit()
+{
+	Node::onExit();
+	AudioEngine::stop(mBgMusicID);
 }
 
 void MainMenu::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
@@ -217,12 +145,8 @@ void MainMenu::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
 
 void MainMenu::startButtonCallback(Ref* pSender)
 {
-	AudioEngine::stop(bgMusicID);
 	AudioEngine::play2d("sounds/SFXButton.mp3");
 
-	auto director = Director::getInstance();
 	auto game = Game::createScene();
-	director->pushScene(game);
-
-	//director->replaceScene(game);
+	Director::getInstance()->pushScene(game);
 }

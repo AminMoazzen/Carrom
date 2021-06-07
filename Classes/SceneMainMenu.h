@@ -6,25 +6,25 @@
 
 USING_NS_CC;
 
-class MainMenu : public cocos2d::Scene
+class MainMenu : public Scene
 {
 public:
 	static cocos2d::Scene* createScene();
 
 	virtual bool init();
-
-	void menuCloseCallback(cocos2d::Ref* pSender);
-	void startButtonCallback(cocos2d::Ref* pSender);
+	virtual void onEnter();
+	virtual void onExit();
 
 	CREATE_FUNC(MainMenu);
 
 private:
-	int bgMusicID = -1;
-	int index = 0;
+	int mBgMusicID = -1;
+	int mDiskIndex = 0;
 	std::vector <Sprite*> disks;
 
 	void tick(float dt);
 	void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
+	void startButtonCallback(cocos2d::Ref* pSender);
 };
 
 #endif // __CARROM_SCENE_MAINMENU_H__

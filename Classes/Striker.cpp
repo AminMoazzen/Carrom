@@ -1,5 +1,6 @@
 #include "Striker.h"
 #include "CarromConfig.h"
+#include <limits.h>
 
 USING_NS_CC;
 
@@ -11,16 +12,27 @@ bool Striker::init()
 bool Striker::setup(PhysicsMaterial& material, float damping)
 {
 	auto owner = getOwner();
+	auto contentSize = owner->getContentSize();
+	Vec2 center = Vec2(contentSize.width / 2, contentSize.height / 2);
 
-	auto physicsBody = PhysicsBody::createCircle(owner->getContentSize().width / 2, material);
+	auto guide = DrawNode::create();
+	Color4F white(1, 1, 1, 0.5f);
+	guide->drawSolidRect(Vec2(-1, 0), Vec2(1, 2), white);
+	guide->setName("guide");
+	guide->setPosition(center);
+	guide->setVisible(false);
+
+	owner->addChild(guide, owner->getZOrder() - 1);
+
+	auto physicsBody = PhysicsBody::createCircle(contentSize.width / 2, material);
 	physicsBody->setRotationEnable(false);
 	physicsBody->setLinearDamping(damping);
 	physicsBody->setGravityEnable(false);
-	physicsBody->setTag(CARROM_TAG_STRIKER);
 	physicsBody->setCategoryBitmask(CARROM_CATEGORY_BITMASK_STRIKER);
 	physicsBody->setContactTestBitmask(CARROM_CATEGORY_BITMASK_DISK | CARROM_CATEGORY_BITMASK_WALL);
 
 	owner->addComponent(physicsBody);
+	owner->setTag(CARROM_TAG_STRIKER);
 
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(Striker::onContactBegin, this);
@@ -29,13 +41,35 @@ bool Striker::setup(PhysicsMaterial& material, float damping)
 
 	touchListener->onTouchBegan = [=](Touch* touch, Event* event)
 	{
-		auto touchLocation = touch->getLocation();
-		if (owner->getBoundingBox().containsPoint(touchLocation))
+		mInitialTouchPos = touch->getLocation();
+		if (owner->getBoundingBox().containsPoint(mInitialTouchPos))
 		{
 			physicsBody->setVelocity(Vec2::ZERO);
+			owner->getChildByName("guide")->setVisible(true);
 			mIsTouched = true;
 		}
 		return true;
+	};
+
+	touchListener->onTouchMoved = [=](Touch* touch, Event* event)
+	{
+		if (mIsTouched)
+		{
+			auto touchLocation = touch->getLocation();
+			Vec2 inputDirection = mInitialTouchPos - touchLocation;
+
+			float inputLength = clampf(inputDirection.getLength(),
+				std::numeric_limits<float>::epsilon(),
+				std::numeric_limits<float>::max());
+
+			auto rect = owner->getChildByName("guide");
+			rect->setScaleY(MIN(inputLength * power, CARROM_PARAM_STRIKER_MAX_POWER) / 10);
+			Vec2 normalInputDir = inputDirection / inputLength;
+
+			rect->setRotation(Vec2::angle(Vec2::UNIT_Y, normalInputDir)
+				* (Vec2::dot(Vec2::UNIT_X, normalInputDir) < 0 ? -1 : 1)
+				* CARROM_RAD_TO_DEG);
+		}
 	};
 
 	touchListener->onTouchEnded = [=](Touch* touch, Event* event)
@@ -43,11 +77,16 @@ bool Striker::setup(PhysicsMaterial& material, float damping)
 		if (mIsTouched)
 		{
 			auto touchLocation = touch->getLocation();
-			Vec2 inputDirection = owner->getPosition() - touchLocation;
-			float inputPower = inputDirection.getLength();
-			Vec2 normalInput = inputDirection / inputPower;
-			float finalPower = clampf(inputPower * power, 0, CARROM_PARAM_STRIKER_MAX_POWER);
+			Vec2 inputDirection = mInitialTouchPos - touchLocation;
+
+			float inputLength = clampf(inputDirection.getLength(),
+				std::numeric_limits<float>::epsilon(),
+				std::numeric_limits<float>::max());
+
+			Vec2 normalInput = inputDirection / inputLength;
+			float finalPower = MIN(inputLength * power, CARROM_PARAM_STRIKER_MAX_POWER);
 			physicsBody->setVelocity(normalInput * finalPower);
+			owner->getChildByName("guide")->setVisible(false);
 			mIsTouched = false;
 		}
 	};
