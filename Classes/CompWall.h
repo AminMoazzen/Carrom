@@ -1,8 +1,7 @@
-#ifndef __CARROM_WALL_H__
-#define __CARROM_WALL_H__
+#ifndef __CARROM_COMP_WALL_H__
+#define __CARROM_COMP_WALL_H__
 
 #include "cocos2d.h"
-#include "AudioEngine.h"
 
 USING_NS_CC;
 
@@ -29,4 +28,4 @@ private:
 	bool init();
 };
 
-#endif // __CARROM_WALL_H__
+#endif // __CARROM_COMP_WALL_H__

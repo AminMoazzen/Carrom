@@ -18,10 +18,10 @@ using namespace CocosDenshion;
 
 USING_NS_CC;
 
-static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
-static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
+static cocos2d::Size designResolutionSize = cocos2d::Size(1920, 1080);
+static cocos2d::Size smallResolutionSize = cocos2d::Size(1280, 720);
+static cocos2d::Size mediumResolutionSize = cocos2d::Size(1920, 1080);
+static cocos2d::Size largeResolutionSize = cocos2d::Size(2560, 1440);
 
 AppDelegate::AppDelegate()
 {
@@ -73,7 +73,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->setAnimationInterval(1.0f / 60);
 
 	// Set the design resolution
-	glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
+	glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::FIXED_HEIGHT);
 	auto frameSize = glview->getFrameSize();
 	// if the frame's height is larger than the height of medium size.
 	if (frameSize.height > mediumResolutionSize.height)
@@ -93,17 +93,16 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
 	register_all_packages();
 
-	// create a scene. it's an autorelease object
+	// Create the Main Menu scene
 	auto mainMenu = MainMenu::createScene();
 
-	Director::getInstance()->setClearColor(Color4F(83.0 / 255.0, 51.0 / 255.0, 8.0 / 255.0, 1));
-
+	// Preload sounds and music
 	AudioEngine::preload("sounds/MusicMenu.mp3");
 	AudioEngine::preload("sounds/SFXButton.mp3");
 	AudioEngine::preload("sounds/SFXDiskPocket.mp3");
 	AudioEngine::preload("sounds/SFXDiskPocket.mp3");
 
-	// run
+	// Run
 	director->runWithScene(mainMenu);
 
 	return true;

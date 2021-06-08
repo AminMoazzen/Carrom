@@ -1,5 +1,5 @@
-#ifndef __CARROM_HOLE_H__
-#define __CARROM_HOLE_H__
+#ifndef __CARROM_COMP_HOLE_H__
+#define __CARROM_COMP_HOLE_H__
 
 #include "cocos2d.h"
 
@@ -26,4 +26,4 @@ private:
 	bool init();
 };
 
-#endif // __CARROM_HOLE_H__
+#endif // __CARROM_COMP_HOLE_H__

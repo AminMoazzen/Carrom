@@ -1,4 +1,4 @@
-#include "Wall.h"
+#include "CompWall.h"
 #include "CarromConfig.h"
 
 USING_NS_CC;

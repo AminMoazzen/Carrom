@@ -22,7 +22,7 @@ bool MainMenu::init()
 	if (!Scene::init())
 		return false;
 
-	// Cache spritesheet
+	// Cache the spritesheet
 	auto spriteCache = SpriteFrameCache::getInstance();
 	spriteCache->addSpriteFramesWithFile("sprites/Sprites.plist");
 
@@ -31,35 +31,42 @@ bool MainMenu::init()
 	Vec2 origin = director->getVisibleOrigin();
 	Vec2 center = Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2);
 
+	// Create title Label
+	auto labelTitle = Label::createWithTTF("Carrom", "fonts/Marker Felt.ttf", 72);
+	if (nullptr == labelTitle)
+		problemLoading("fonts/Marker Felt.ttf");
+	labelTitle->setPosition(Vec2(center.x, origin.y + visibleSize.height - labelTitle->getContentSize().height));
+	this->addChild(labelTitle, CARROM_Z_LAYER_BACKGROUND + 1);
+
+	// Create music credit Label
+	auto labelMusic = Label::createWithTTF("Music: www.bensound.com", "fonts/Marker Felt.ttf", 36);
+	labelMusic->setAnchorPoint(Vec2(1.0, 0.0));
+	auto labelMusicSize = labelTitle->getContentSize();
+	labelMusic->setPosition(Vec2(origin.x + visibleSize.width - labelMusicSize.height, labelMusicSize.height));
+	this->addChild(labelMusic, CARROM_Z_LAYER_BACKGROUND + 1);
+
 	// Create Practice button
-	auto startItem = MenuItemImage::create();
+	auto itemStart = MenuItemImage::create();
 	auto normalSpriteFrame = spriteCache->getSpriteFrameByName("ButtonStartNormal.png");
 	auto selectedSpriteFrame = spriteCache->getSpriteFrameByName("ButtonStartPressed.png");
-	startItem->setNormalSpriteFrame(normalSpriteFrame);
-	startItem->setSelectedSpriteFrame(selectedSpriteFrame);
-	startItem->setCallback(CC_CALLBACK_1(MainMenu::startButtonCallback, this));
-	startItem->setAnchorPoint(Vec2(0.5, 0.0));
-	startItem->setPosition(Vec2(center.x, 50));
+	itemStart->setNormalSpriteFrame(normalSpriteFrame);
+	itemStart->setSelectedSpriteFrame(selectedSpriteFrame);
+	itemStart->setCallback(CC_CALLBACK_1(MainMenu::startButtonCallback, this));
+	itemStart->setAnchorPoint(Vec2(0.5, 0.0));
+	itemStart->setPosition(Vec2(center.x, 50));
 
-	auto labelPractice = Label::createWithTTF("Practice", "fonts/Marker Felt.ttf", 18);
-	if (labelPractice == nullptr)
-		problemLoading("fonts/Marker Felt.ttf");
-	labelPractice->setPosition(Vec2(startItem->getContentSize().width / 2, startItem->getContentSize().height / 2));
-	startItem->addChild(labelPractice, CARROM_Z_LAYER_BACKGROUND + 2);
+	auto labelPractice = Label::createWithTTF("Practice", "fonts/Marker Felt.ttf", 60);
+	labelPractice->setPosition(Vec2(itemStart->getContentSize().width / 2, itemStart->getContentSize().height / 2));
+	itemStart->addChild(labelPractice, CARROM_Z_LAYER_BACKGROUND + 2);
 
 	// Create menu
-	auto menu = Menu::create(startItem, NULL);
+	auto menu = Menu::create(itemStart, NULL);
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu, CARROM_Z_LAYER_BACKGROUND + 1);
 
-	// Create title Label
-	auto titleLabel = Label::createWithTTF("Carrom", "fonts/Marker Felt.ttf", 24);
-	titleLabel->setPosition(Vec2(center.x, origin.y + visibleSize.height - titleLabel->getContentSize().height));
-	this->addChild(titleLabel, CARROM_Z_LAYER_BACKGROUND + 1);
-
 	// Create background image
 	auto background = Sprite::create("sprites/MenuBackground.png");
-	if (background == nullptr)
+	if (nullptr == background)
 		problemLoading("sprites/MenuBackground.png");
 	background->setPosition(center);
 	background->setContentSize(Size(visibleSize.width * 2, visibleSize.height * 2));

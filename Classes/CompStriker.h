@@ -1,5 +1,5 @@
-#ifndef __CARROM_STRIKER_H__
-#define __CARROM_STRIKER_H__
+#ifndef __CARROM_COMP_STRIKER_H__
+#define __CARROM_COMP_STRIKER_H__
 
 #include "cocos2d.h"
 #include "AudioEngine.h"
@@ -11,7 +11,7 @@ using namespace experimental;
 class Striker : public Component
 {
 public:
-	float power = 10;
+	float sensitivity = 10;
 
 	static Striker* create()
 	{
@@ -51,4 +51,4 @@ private:
 	}
 };
 
-#endif // __CARROM_STRIKER_H__
+#endif // __CARROM_COMP_STRIKER_H__

@@ -1,5 +1,4 @@
-#include "Hole.h"
-#include "SimpleAudioEngine.h"
+#include "CompHole.h"
 #include "CarromConfig.h"
 
 USING_NS_CC;

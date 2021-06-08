@@ -51,20 +51,20 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/SceneMainMenu.cpp
      Classes/SceneGame.cpp
-     Classes/Disk.cpp
-     Classes/Striker.cpp
-     Classes/Hole.cpp
-     Classes/Wall.cpp
+     Classes/CompDisk.cpp
+     Classes/CompStriker.cpp
+     Classes/CompHole.cpp
+     Classes/CompWall.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
+     Classes/CarromConfig.h
      Classes/SceneMainMenu.h
      Classes/SceneGame.h
-     Classes/Disk.h
-     Classes/Striker.h
-     Classes/Hole.h
-     Classes/CarromConfig.h
-     Classes/Wall.h
+     Classes/CompDisk.h
+     Classes/CompStriker.h
+     Classes/CompHole.h
+     Classes/CompWall.h
      )
 
 if(ANDROID)

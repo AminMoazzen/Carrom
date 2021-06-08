@@ -1,4 +1,4 @@
-#include "Disk.h"
+#include "CompDisk.h"
 #include "CarromConfig.h"
 
 USING_NS_CC;
